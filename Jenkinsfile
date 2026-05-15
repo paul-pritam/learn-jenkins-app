@@ -9,6 +9,7 @@ pipeline{
                 }
             }
             steps{
+                sh 'echo "Building the application..."'
                 sh '''
                     ls -la
                     node --version
@@ -21,7 +22,10 @@ pipeline{
         }
         stage('Test'){
             steps{
-                sh 'npm test'
+                sh '''
+                    echo "Running tests..."
+                    npm test
+                '''
             }
         }
     }
