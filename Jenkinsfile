@@ -28,9 +28,8 @@ pipeline {
             }
             steps {
                 sh '''
-                    echo "Running tests..."
+                    test -f build/index.htmls
                     npm test
-                    test -f build/index.html
                 '''
             }
         }
