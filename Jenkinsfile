@@ -37,6 +37,7 @@ pipeline {
     post{
         always{
             archiveArtifacts(artifacts: 'test-results/**', allowEmptyArchive: true)
+            junit "test-results/*.xml"
         }
     }
 }
