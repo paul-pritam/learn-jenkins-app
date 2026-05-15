@@ -36,7 +36,7 @@ pipeline {
     }
     post{
         always{
-            archiveArtifacts(artifacts: 'test-results.xml', allowEmptyArchive: true)
+            archiveArtifacts(artifacts: 'test-results/**', allowEmptyArchive: true)
         }
     }
 }
