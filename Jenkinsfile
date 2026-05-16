@@ -53,10 +53,10 @@ pipeline {
     }
     post{
         always {
-            archiveArtifacts artifacts: 'test-results/**', allowEmptyArchive: true
+            archiveArtifacts artifacts: 'jest-results/**', allowEmptyArchive: true
 
             junit allowEmptyResults: true,
-                  testResults: 'test-results/*.xml'
+                  testResults: 'jest-results/*.xml'
         }
     }
 }
