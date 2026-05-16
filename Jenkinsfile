@@ -1,13 +1,16 @@
 pipeline {
     agent any
+
     stages {
+
         stage('Build') {
             agent {
                 docker {
                     image 'node:18-alpine'
-                    reuseNode true 
+                    reuseNode true
                 }
             }
+
             steps {
                 sh '''
                     ls -la
@@ -19,44 +22,56 @@ pipeline {
                 '''
             }
         }
-        stage('Test') {
-            agent {
-                docker {
-                    image 'node:18-alpine'
-                    reuseNode true 
+
+        stage('Tests') {
+
+            parallel {
+
+                stage('Unit Tests') {
+
+                    agent {
+                        docker {
+                            image 'node:18-alpine'
+                            reuseNode true
+                        }
+                    }
+
+                    steps {
+                        sh '''
+                            test -f build/index.html
+                            CI=true npm test
+                        '''
+                    }
+
+                    post {
+                        always {
+                            archiveArtifacts artifacts: 'jest-results/**', allowEmptyArchive: true
+
+                            junit allowEmptyResults: true,
+                                   testResults: 'jest-results/*.xml'
+                        }
+                    }
+                }
+
+                stage('E2E') {
+
+                    agent {
+                        docker {
+                            image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
+                            reuseNode true
+                        }
+                    }
+
+                    steps {
+                        sh '''
+                            npm install serve
+                            node_modules/.bin/serve -s build &
+                            sleep 10
+                            npx playwright test
+                        '''
+                    }
                 }
             }
-            steps {
-                sh '''
-                    test -f build/index.html
-                    CI=true npm test
-                '''
-            }
-        }
-        stage('E2E') {
-            agent {
-                docker {
-                    image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
-                    reuseNode true
-                }
-            }
-
-            steps {
-                sh '''
-                    npm install serve
-                    node_modules/.bin/serve -s build &
-                    sleep 10
-                    npx playwright test
-                '''
-            }
-        }
-    }
-    post{
-        always {
-            archiveArtifacts artifacts: 'jest-results/**', allowEmptyArchive: true
-
-            junit allowEmptyResults: true,
-                  testResults: 'jest-results/*.xml'
         }
     }
 }
