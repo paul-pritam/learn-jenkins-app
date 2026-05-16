@@ -52,9 +52,11 @@ pipeline {
         }
     }
     post{
-        always{
-            archiveArtifacts(artifacts: 'test-results/**', allowEmptyArchive: true)
-            junit "test-results/*.xml"
+        always {
+            archiveArtifacts artifacts: 'test-results/**', allowEmptyArchive: true
+
+            junit allowEmptyResults: true,
+                  testResults: 'test-results/*.xml'
         }
     }
 }
