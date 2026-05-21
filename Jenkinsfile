@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        // Keeping your actual working credentials
+        REACT_APP_VERSION = '1.2.3 '
         NETLIFY_SITE_ID = credentials('netlify-site-id')
         NETLIFY_AUTH_TOKEN = credentials('netlify_pat')
     }
@@ -134,7 +134,6 @@ pipeline {
             }
 
             environment {
-                // Keeping your specific Netlify prod URL
                 CI_ENVIRONMENT_URL = 'https://beautiful-starlight-484325.netlify.app'
             }
 
