@@ -1,0 +1,27 @@
+{
+    "requiresCompatibilities": [
+        "FARGATE"
+    ],
+    "family": "jenkins-try1-cluster-prod",
+    "containerDefinitions": [
+        {
+            "name": "jenkins-try1",
+            "image": "nginx:1.26-alpine",
+            "portMappings": [
+                {   
+                    "name": "nginx",
+                    "containerPort": 80,
+                    "hostPort": 80,
+                    "protocol": "tcp",
+                    "appProtocol": "http"
+                }
+            ],
+            "essential": true
+        }
+    ],
+    "volumes": [],
+    "networkMode": "awsvpc",
+    "memory": "512",
+    "cpu": "256",
+    "executionRoleArn": ""
+}
