@@ -6,7 +6,7 @@
     "containerDefinitions": [
         {
             "name": "jenkins-try1",
-            "image": "059310317881.dkr.ecr.us-east-1.amazonaws.com/myjenkins-try:1.0.89",
+            "image": "059310317881.dkr.ecr.us-east-1.amazonaws.com/myjenkins-try:#APP_VERSION#",
             "portMappings": [
                 {   
                     "name": "nginx",
