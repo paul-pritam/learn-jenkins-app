@@ -4,6 +4,9 @@ pipeline {
     environment {
         REACT_APP_VERSION = "1.0.${BUILD_ID}"
         AWS_DEFAULT_REGION = 'us-east-1'
+        AWS_ECS_CLUSTER = 'jenkins-try1-cluster'
+        AWS_ECS_SERVICE_PROD = 'jenkins-try1-cluster-prod-service'
+        AWS_ECS_TD_PROD = 'jenkins-try1-cluster-prod'
     }
 
     stages {
@@ -23,8 +26,8 @@ pipeline {
                         yum install jq -y
                         LATEST_TD_REV=$(aws ecs register-task-definition --cli-input-json file://aws/task-definitions-prod.json | jq '.taskDefinition.revision')
                         echo "Latest Task Definition Revision: $LATEST_TD_REV"
-                        aws ecs update-service --cluster jenkins-try1-cluster --service jenkins-try1-cluster-prod-service --task-definition jenkins-try1-cluster-prod:$LATEST_TD_REV
-                        aws ecs wait services-stable --cluster jenkins-try1-cluster --services jenkins-try1-cluster-prod-service
+                        aws ecs update-service --cluster $AWS_ECS_CLUSTER --service $AWS_ECS_SERVICE_PROD --task-definition $AWS_ECS_TD_PROD:$LATEST_TD_REV
+                        aws ecs wait services-stable --cluster $AWS_ECS_CLUSTER --services $AWS_ECS_SERVICE_PROD
                     '''
                 }
             }
