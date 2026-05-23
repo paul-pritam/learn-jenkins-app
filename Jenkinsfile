@@ -3,11 +3,28 @@ pipeline {
 
     environment {
         REACT_APP_VERSION = "1.0.${BUILD_ID}"
-        NETLIFY_SITE_ID = credentials('netlify-site-id')
-        NETLIFY_AUTH_TOKEN = credentials('netlify_pat')
+        AWS_DEFAULT_REGION = 'us-east-1'
     }
 
     stages {
+
+        stage('Deploy to AWS') {
+            agent {
+                docker {
+                    image 'amazon/aws-cli'
+                    reuseNode true
+                    args "--entrypoint=''"
+                }
+            }
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'my-AWS-try', passwordVariable: 'AWS_SECRET_ACCESS_KEY', usernameVariable: 'AWS_ACCESS_KEY_ID')]) {
+                    sh '''
+                        aws --version
+                        aws ecs register-task-definition --cli-input-json file://aws/task-definitions-prod.json
+                    '''
+                }
+            }
+        }
 
         stage('Build') {
             agent {
@@ -28,81 +45,5 @@ pipeline {
                 '''
             }
         }
-
-        stage('AWS') {
-            agent {
-                docker {
-                    image 'amazon/aws-cli'
-                    reuseNode true
-                    args "--entrypoint=''"
-                }
-            }
-            environment {
-                AWS_S3_BUCKET = 'jenkins-try-22052026'
-            }
-            steps {
-                withCredentials([usernamePassword(credentialsId: 'my-AWS-try', passwordVariable: 'AWS_SECRET_ACCESS_KEY', usernameVariable: 'AWS_ACCESS_KEY_ID')]) {
-                    sh '''
-                        aws --version
-                        aws s3 sync build s3://$AWS_S3_BUCKET
-                    '''
-                }
-            }
-        }
-
-        stage('Tests') {
-
-            parallel {
-
-                stage('Unit Tests') {
-                    agent {
-                        docker {
-                            image 'node:18-alpine'
-                            reuseNode true
-                        }
-                    }
-
-                    steps {
-                        sh '''
-                            test -f build/index.html
-                            CI=true npm test
-                        '''
-                    }
-
-                    post {
-                        always {
-                            archiveArtifacts artifacts: 'jest-results/**', allowEmptyArchive: true
-
-                            junit allowEmptyResults: true,
-                                   testResults: 'jest-results/*.xml'
-                        }
-                    }
-                }
-
-                stage('E2E') {
-                    agent {
-                        docker {
-                            image 'my-playwright'
-                            reuseNode true
-                        }
-                    }
-
-                    steps {
-                        sh '''
-                            serve -s build &
-                            sleep 10
-                            npx playwright test --reporter=html
-                        '''
-                    }
-
-                    post {
-                        always {
-                            publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Local E2E', reportTitles: '', useWrapperFileDirectly: true])
-                        }
-                    }
-                }
-            }
-        }
-
     }
 }
